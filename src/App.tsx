@@ -35,11 +35,6 @@ function App() {
                 beginAtZero: true,
             }
         },
-        plugins: {
-            hoverLines: {
-                lineColor: 'black'
-            },
-        }
     };
 
     const hoverLines: Plugin<string> = {
