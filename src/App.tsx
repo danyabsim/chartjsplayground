@@ -1,81 +1,61 @@
 import './App.css'
-import {Bar} from "react-chartjs-2";
+import {Line} from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import {CategoryScale, ChartOptions, Plugin} from "chart.js";
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+
 Chart.register(CategoryScale);
 
 function App() {
-    function barBackgroundColorCode(): (ctx) => string {
-        return (ctx) => {
-            if (ctx.dataIndex === 0 || ctx.dataIndex === ctx.chart.config.data.datasets[0].data.length - 1) return 'rgba(0, 0, 0, 0.2)';
-            const start = ctx.parsed._custom.start;
-            const end = ctx.parsed._custom.end;
-            return start < end ? 'rgba(75, 192, 192, 0.2)' : (start > end ? 'rgba(255, 99, 132, 0.2)' : 'rgba(0, 0, 0, 0.2)');
-        };
-    }
-
-    function barColorCode(): (ctx) => string {
-        return (ctx) => {
-            if (ctx.dataIndex === 0 || ctx.dataIndex === ctx.chart.config.data.datasets[0].data.length - 1) return 'rgba(0, 0, 0, 1)';
-            const start = ctx.parsed._custom.start;
-            const end = ctx.parsed._custom.end;
-            return start < end ? 'rgba(75, 192, 192, 1)' : (start > end ? 'rgba(255, 99, 132, 1)' : 'rgba(0, 0, 0, 1)');
-        };
-    }
-
     const data = {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange', 'White'],
         datasets: [{
             label: '# of Votes',
-            data: [
-                [10, 7],
-                [7, 15],
-                [15, 4],
-                [4, 9],
-                [9, 11],
-                [11, 1],
-            ],
-            backgroundColor: barBackgroundColorCode(),
-            borderColor: barColorCode(),
-            borderWidth: 1,
-            borderSkipped: false
+            data: [65, 59, 51, 81, 56, 55, 40],
+            borderColor: 'rgb(55, 192, 192, 0.5)',
+            borderWidth: 2,
+            pointRadius: 5,
+            pointStyle: 'circle',
+            backgroundColor: 'rgb(55, 192, 192, 0.5)',
+            tension: 0.4
+        }, {
+            label: '# of Votes',
+            data: [23, 12, 74, 12, 76, 23, 12],
+            borderColor: 'rgb(192, 55, 192, 0.5)',
+            borderWidth: 2,
+            pointRadius: 5,
+            pointStyle: 'circle',
+            backgroundColor: 'rgb(192, 55, 192, 0.5)',
+            tension: 0.4
         }]
     };
 
     const options = {
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: true,
             }
         },
         plugins: {
-            tooltip: {
-                enabled: false
-            },
-            waterfallLines: {
+            hoverLines: {
                 lineColor: 'black'
             },
-            datalabels: {
-                formatter: (value: number[]) => {
-                    return `Votes: ${Math.abs(value[1] - value[0])}`
-                }
-            }
         }
     };
 
-    const waterfallLines: Plugin<string> = {
-        id: 'waterfallLines',
-        beforeDraw(chart: Chart<string>, args: { cancelable: true }, options: ChartOptions<string>): boolean | void {
-            const {ctx, config, scales: {x, y}} = chart;
+    const hoverLines: Plugin<string> = {
+        id: 'hoverLines',
+        afterDatasetsDraw(chart: Chart<string>, args: any, options: ChartOptions<string>, cancelable: false) {
+            const {ctx, scales: {x, y}} = chart;
             ctx.save();
-
-            ctx.strokeStyle = options.lineColor;
-            ctx.setLineDash([5, 5]);
-
-            for (let i = 0; i < config._config.data.datasets[0].data.length - 1; i++) {
-                ctx.strokeRect(x.getPixelForValue(i), y.getPixelForValue(config._config.data.datasets[0].data[i][1]), x.getPixelForValue(0.5), 0);
+            if (chart._active[0]) {
+                const firstPoint = chart.config.data.datasets[0].data[chart._active[0].index];
+                const secondPoint = chart.config.data.datasets[1].data[chart._active[0].index];
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'blue';
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(x.getPixelForValue(chart._active[0].index), y.getPixelForValue(secondPoint), 0, y.getPixelForValue(firstPoint) - y.getPixelForValue(secondPoint));
             }
+            ctx.restore();
         }
     };
 
@@ -86,10 +66,10 @@ function App() {
             </div>
             <div className="chartCard">
                 <div className="chartBox">
-                    <Bar
+                    <Line
                         data={data}
                         options={options}
-                        plugins={[waterfallLines, ChartDataLabels]}
+                        plugins={[hoverLines]}
                     />
                 </div>
             </div>
