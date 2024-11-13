@@ -35,6 +35,20 @@ function App() {
                 beginAtZero: true,
             }
         },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        const chart = context.chart;
+                        const index = context.dataIndex;
+                        const firstPoint = chart.config.data.datasets[0].data[index];
+                        const secondPoint = chart.config.data.datasets[1].data[index];
+                        const difference = Math.abs(firstPoint - secondPoint);
+                        return `Difference: ${difference}`;
+                    }
+                }
+            }
+        }
     };
 
     const hoverLines: Plugin<string> = {
